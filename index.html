@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACCESO NO AUTORIZADO</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #00ff00;
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        /* Efecto Matrix de fondo */
+        #matrix-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0.3;
+        }
+        
+        /* Container principal */
+        .container {
+            position: relative;
+            z-index: 2;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            margin-top: 50px;
+        }
+        
+        /* Header con glitch */
+        .glitch-header {
+            font-size: 2.5em;
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 0 0 10px #00ff00;
+            animation: glitch 3s infinite;
+        }
+        
+        @keyframes glitch {
+            0%, 90%, 100% {
+                transform: translate(0);
+                text-shadow: 0 0 10px #00ff00;
+            }
+            92% {
+                transform: translate(-2px, 2px);
+                text-shadow: 2px 0 #ff0000, -2px 0 #0000ff;
+            }
+            94% {
+                transform: translate(2px, -2px);
+                text-shadow: -2px 0 #ff0000, 2px 0 #0000ff;
+            }
+            96% {
+                transform: translate(-2px, -2px);
+                text-shadow: 2px 2px #ff0000, -2px -2px #0000ff;
+            }
+        }
+        
+        /* Terminal */
+        .terminal {
+            background: rgba(0, 20, 0, 0.9);
+            border: 2px solid #00ff00;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+            min-height: 200px;
+        }
+        
+        .terminal-line {
+            margin: 8px 0;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards;
+        }
+        
+        .terminal-line::before {
+            content: '> ';
+            color: #00ff00;
+            font-weight: bold;
+        }
+        
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+        
+        .cursor-terminal {
+            display: inline-block;
+            width: 10px;
+            height: 15px;
+            background: #00ff00;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        
+        /* Barras de progreso */
+        .progress-section {
+            background: rgba(0, 20, 0, 0.9);
+            border: 2px solid #00ff00;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+        }
+        
+        .progress-item {
+            margin: 20px 0;
+            opacity: 0;
+        }
+        
+        .progress-label {
+            margin-bottom: 8px;
+            font-size: 1.1em;
+        }
+        
+        .progress-bar-container {
+            width: 100%;
+            height: 30px;
+            background: rgba(0, 50, 0, 0.5);
+            border: 1px solid #00ff00;
+            border-radius: 3px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #00cc00);
+            width: 0%;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 10px #00ff00;
+        }
+        
+        .progress-percentage {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: bold;
+            color: #000;
+            text-shadow: 0 0 5px #00ff00;
+            z-index: 1;
+        }
+        
+        /* Efecto de parpadeo de pantalla */
+        @keyframes screenFlicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.95; }
+        }
+        
+        .container {
+            animation: screenFlicker 0.15s infinite;
+        }
+        
+        /* Mensaje final */
+        .final-message {
+            text-align: center;
+            font-size: 1.8em;
+            margin-top: 30px;
+            opacity: 0;
+            color: #ff0000;
+            text-shadow: 0 0 15px #ff0000;
+            font-weight: bold;
+        }
+        
+        @media (max-width: 600px) {
+            .glitch-header {
+                font-size: 1.8em;
+            }
+            .container {
+                margin-top: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrix-canvas"></canvas>
+    
+    <div class="container">
+        <h1 class="glitch-header">⚠️ ACCESO AUTORIZADO ⚠️</h1>
+        
+        <div class="terminal" id="terminal">
+            <!-- Las líneas se añadirán dinámicamente con JS -->
+        </div>
+        
+        <div class="progress-section">
+            <div class="progress-item" id="progress1">
+                <div class="progress-label">Accediendo a contenido de backups...</div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="bar1"></div>
+                    <div class="progress-percentage" id="percent1">0%</div>
+                </div>
+            </div>
+            
+            <div class="progress-item" id="progress2">
+                <div class="progress-label">Extrayendo paquetes de memoria...</div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="bar2"></div>
+                    <div class="progress-percentage" id="percent2">0%</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="final-message" id="finalMessage">
+            SISTEMA COMPROMETIDO<br>
+            DATOS EXTRAÍDOS
+        </div>
+    </div>
+
+    <script>
+        // Efecto Matrix en canvas
+        const canvas = document.getElementById('matrix-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
+        const fontSize = 14;
+        const columns = canvas.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(1);
+        
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = '#00ff00';
+            ctx.font = fontSize + 'px monospace';
+            
+            for (let i = 0; i < drops.length; i++) {
+                const text = chars[Math.floor(Math.random() * chars.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+        
+        setInterval(drawMatrix, 35);
+        
+        // Terminal commands
+        const terminal = document.getElementById('terminal');
+        const commands = [
+            'exploit/multi/handler > set PAYLOAD windows/meterpreter/reverse_tcp',
+            'msf6 > use auxiliary/scanner/smb/smb_version',
+            'nmap -sS -sV -O -A --script vuln 192.168.1.0/24',
+            'msfvenom -p android/meterpreter/reverse_tcp LHOST=10.0.0.1 LPORT=4444',
+            'SET payload windows/meterpreter/reverse_https',
+            'sqlmap -u "http://target/page?id=1" --dump --batch'
+        ];
+        
+        let commandIndex = 0;
+        
+        function typeCommand() {
+            if (commandIndex < commands.length) {
+                const line = document.createElement('div');
+                line.className = 'terminal-line';
+                line.textContent = commands[commandIndex];
+                line.style.animationDelay = '0s';
+                terminal.appendChild(line);
+                commandIndex++;
+                
+                setTimeout(typeCommand, 800);
+            } else {
+                // Añadir cursor final
+                const cursor = document.createElement('span');
+                cursor.className = 'cursor-terminal';
+                terminal.appendChild(cursor);
+                
+                // Iniciar barras de progreso
+                setTimeout(startProgress, 500);
+            }
+        }
+        
+        // Barras de progreso
+        function startProgress() {
+            const progress1 = document.getElementById('progress1');
+            const progress2 = document.getElementById('progress2');
+            const bar1 = document.getElementById('bar1');
+            const bar2 = document.getElementById('bar2');
+            const percent1 = document.getElementById('percent1');
+            const percent2 = document.getElementById('percent2');
+            const finalMessage = document.getElementById('finalMessage');
+            
+            // Mostrar primera barra
+            progress1.style.opacity = '1';
+            progress1.style.animation = 'fadeIn 0.5s forwards';
+            
+            let progress1Value = 0;
+            const interval1 = setInterval(() => {
+                progress1Value += Math.random() * 15;
+                if (progress1Value > 100) progress1Value = 100;
+                
+                bar1.style.width = progress1Value + '%';
+                percent1.textContent = Math.floor(progress1Value) + '%';
+                
+                if (progress1Value >= 100) {
+                    clearInterval(interval1);
+                    
+                    // Mostrar segunda barra
+                    setTimeout(() => {
+                        progress2.style.opacity = '1';
+                        progress2.style.animation = 'fadeIn 0.5s forwards';
+                        
+                        let progress2Value = 0;
+                        const interval2 = setInterval(() => {
+                            progress2Value += Math.random() * 12;
+                            if (progress2Value > 100) progress2Value = 100;
+                            
+                            bar2.style.width = progress2Value + '%';
+                            percent2.textContent = Math.floor(progress2Value) + '%';
+                            
+                            if (progress2Value >= 100) {
+                                clearInterval(interval2);
+                                
+                                // Mostrar mensaje final
+                                setTimeout(() => {
+                                    finalMessage.style.opacity = '1';
+                                    finalMessage.style.animation = 'fadeIn 1s forwards';
+                                }, 500);
+                            }
+                        }, 200);
+                    }, 500);
+                }
+            }, 200);
+        }
+        
+        // Iniciar animación de terminal
+        setTimeout(typeCommand, 1000);
+        
+        // Ajustar canvas en resize
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>
